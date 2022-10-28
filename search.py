@@ -107,6 +107,25 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+    #print "Start:", problem.getStartState()
+    #print "Is the start a goal?", problem.isGoalState((1,1))
+    #print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    startPosition = problem.getStartState()
+    visitedPositions = []
+    q = util.Queue()
+    q.push((startPosition,[]))
+    pacmanPath =[]
+    currentPosition = startPosition
+    while not problem.isGoalState(currentPosition):
+        currentPosition, pacmanPath = q.pop()
+        if problem.isGoalState(currentPosition):
+                return pacmanPath
+        if currentPosition not in visitedPositions:
+            for nextPosition, way, cost in problem.getSuccessors(currentPosition):
+                    newPacmanPath = pacmanPath + [way]
+                    q.push((nextPosition,newPacmanPath))
+            visitedPositions.append(currentPosition)
+    return pacmanPath
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
@@ -115,7 +134,6 @@ def uniformCostSearch(problem):
     path = []
     visited = []
     queue = util.PriorityQueue()
-    # print "Start's successors:", problem.getSuccessors(problem.getStartState())
     queue.update((problem.getStartState(),path),0) # initialize the queue with start state
     while not queue.isEmpty():
         current_state, current_path = queue.pop()
@@ -123,19 +141,13 @@ def uniformCostSearch(problem):
             return current_path
         if current_state not in visited:
             potential_paths = problem.getSuccessors(current_state)
-            # print ("potential paths:", potential_paths)
             for potential_path in potential_paths:
-                # print ("* 1 potential path:", potential_path)
                 new_state = potential_path[0]
                 if new_state not in visited:
                     new_direction = potential_path[1]
-                    # current_path.append(new_direction)
                     new_path = current_path + [new_direction]
-                    # print ("* new path:", new_path)
                     queue.push((new_state, new_path), problem.getCostOfActions(new_path))
-            
             visited.append(current_state)
-
     return path
 
 def nullHeuristic(state, problem=None):
@@ -148,31 +160,23 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    path = []
-    visited = []
-    queue = util.PriorityQueue()
-    # print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    queue.update((problem.getStartState(),path),0) # initialize the queue with start state
-    while not queue.isEmpty():
-        current_state, current_path = queue.pop()
-        if problem.isGoalState(current_state):
-            return current_path
-        if current_state not in visited:
-            potential_paths = problem.getSuccessors(current_state)
-            # print ("potential paths:", potential_paths)
-            for potential_path in potential_paths:
-                # print ("* 1 potential path:", potential_path)
-                new_state = potential_path[0]
-                if new_state not in visited:
-                    new_direction = potential_path[1]
-                    # current_path.append(new_direction)
-                    new_path = current_path + [new_direction]
-                    # print ("* new path:", new_path)
-                    queue.push((new_state, new_path), heuristic(current_state, problem))
-            
-            visited.append(current_state)
-
-    return path
+    startPosition = problem.getStartState()
+    visitedPositions = []
+    q = util.PriorityQueue()
+    q.push((startPosition,[],0),0)
+    pacmanPath =[]
+    currentPosition = startPosition
+    while not problem.isGoalState(currentPosition):
+        currentPosition, pacmanPath, currentCost = q.pop()
+        if problem.isGoalState(currentPosition):
+            return pacmanPath
+        if currentPosition not in visitedPositions:
+            for nextPosition, way, cost in problem.getSuccessors(currentPosition):
+                    newPacmanPath = pacmanPath + [way]
+                    newCost = currentCost + cost
+                    q.push((nextPosition,newPacmanPath,newCost),newCost+heuristic(nextPosition,problem))
+            visitedPositions.append(currentPosition)
+    return pacmanPath
 
 
 # Abbreviations
