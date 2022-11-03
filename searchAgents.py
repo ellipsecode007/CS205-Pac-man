@@ -288,6 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        self.cornersCovered = []
 
     def getStartState(self):
         """
@@ -295,6 +296,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        return (self.startingPosition,self.cornersCovered)
         util.raiseNotDefined()
 
     def isGoalState(self, state):
@@ -302,6 +304,19 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
+        #print("checking")
+        #print(state)
+        l1=tuple(sorted(self.corners))
+        l2=tuple(sorted(state[1]))
+        #l1.sort()
+        #l2.sort()
+        if(l1==l2):
+            return True
+        return False
+        # print(self.corners)
+        #if state in self.corners:
+        #return True
+        #return False
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -325,6 +340,20 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            x,y = state[0]
+           # print(state)
+            dx,dy = Actions.directionToVector(action)
+            nextx,nexty = int(x+dx), int(y+dy)
+            hitsWall = self.walls[nextx][nexty]
+            #print(hitsWall)
+            cornerCovered = state[1]
+            if(hitsWall):
+                continue
+            else:
+                if (nextx,nexty) not in cornerCovered and (nextx,nexty) in self.corners:
+                    cornerCovered = cornerCovered + [(nextx,nexty)]
+                    cornerCovered = list(set(cornerCovered))
+                successors.append((((nextx,nexty),cornerCovered),action,1))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -360,7 +389,108 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    # heuristic = 0
+    # currentX,currentY = state[0]
+    # for x,y in corners:
+    #     heuristic = heuristic + abs(currentX-x) + abs(currentY-y)
+    # "*** YOUR CODE HERE ***"
+    # return heuristic/4 # Default to trivial solution 2446
+
+    # heuristic = 0
+    # currentX,currentY = state[0]
+    # for x,y in corners:
+    #     heuristic = heuristic + (((currentX-x)**2 + (currentY-y)**2)**(1/2))
+    # "*** YOUR CODE HERE ***"
+    # return heuristic/4 # Default to trivial solution 2234
+
+    # q=util.PriorityQueue()
+    # currentX,currentY = state[0]
+    # for x,y in corners:
+    #     if (x,y) not in state[1]:
+    #         d = int(abs(x-currentX)+abs(y-currentY))
+    #         q.push((x,y),d)
+    # heuristic=0
+    # while not q.isEmpty():
+    #     x,y = q.pop()
+    #     d =int(abs(x-currentX)+abs(y-currentY))
+    #     heuristic += d
+    #     currentX = x
+    #     currentY = y
+    # return heuristic   # 627
+
+    # q=util.PriorityQueue()
+    # currentX = state[0][0]
+    # currentY = state[0][1]
+    # for x,y in corners:
+    #     if (x,y) not in state[1]:
+    #         d = int(int(((x-currentX)**2 + (y-currentY)**2)**(0.5)))
+    #         q.push((x,y),d)
+    #         # print(int(((currentX-x)**2 + (currentY-y)**2)**(0.5)))
+    #         # print(int(((currentX-x)**2 + (currentY-y)**2)**(1/2)))
+    # heuristic=0
+    # while not q.isEmpty():
+    #     x,y = q.pop()
+    #     d=int(((currentX-x)**2 + (currentY-y)**2)**(0.5))
+    #     heuristic = heuristic + d
+    #     currentX = x
+    #     currentY = y
+    # return heuristic   # 627
+
+    # currentX,currentY = state[0]
+    # ma=0
+    # for x,y in corners:
+    #     if (x,y) not in state[1]:
+    #         d = (abs(x-currentX)+abs(y-currentY))
+    #         if ma<d:
+    #             ma=d
+    # heuristic = ma
+    # return heuristic   # 1357
+
+    # currentX,currentY = state[0]
+    # ma=1000
+    # ans = 0
+    # localCOvered = state[1]
+    # localX = currentX
+    # localY = currentY
+    # n=len(state[1])
+    # for i in range(0,4):
+    #     l=[]
+    #     for x,y in corners:
+    #         if (x,y) not in localCOvered:
+    #             d = (abs(x-currentX)+abs(y-currentY))
+    #             if ma>d:
+    #                 ma=d
+    #                 localX = x
+    #                 localY = y
+    #     currentX = localX
+    #     currentY = localY
+    #     if ma != 1000:
+    #         #print("check")
+    #         ans=ans+ma
+    #     localCOvered.append((localX,localY))
+    # heuristic = ans
+    # return heuristic   # 194 Best!!!
+
+    currentX,currentY = state[0]
+    ans = 0
+    # cornersCovered=list(set(state[1]))
+    localCOvered = list(set(state[1]))
+    n=len(localCOvered)
+    # print(cornersCovered)
+    for i in range(4-n):
+        l=[]
+        for x,y in corners:
+            if (x,y) not in localCOvered:
+                # d= util.manhattanDistance((x,y),(currentX,currentY))
+                d = (abs(x-currentX)+abs(y-currentY))
+                l.append((d,(x,y)))
+        loca = min(l)
+        currentX = loca[1][0]
+        currentY = loca[1][1]
+        ans=ans + loca[0]
+        localCOvered=  localCOvered + [(currentX,currentY)]
+    heuristic = ans
+    return heuristic   # 692 Best!!!
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
