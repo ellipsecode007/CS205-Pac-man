@@ -288,6 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        #list to store which corners have been covered
         self.cornersCovered = []
 
     def getStartState(self):
@@ -296,6 +297,7 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
+        # returning starting state with current position and corners covered which is null at start
         return (self.startingPosition,self.cornersCovered)
         util.raiseNotDefined()
 
@@ -304,19 +306,13 @@ class CornersProblem(search.SearchProblem):
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        #print("checking")
-        #print(state)
+        #sorting the corners and corners covered list to match them.
         l1=tuple(sorted(self.corners))
         l2=tuple(sorted(state[1]))
-        #l1.sort()
-        #l2.sort()
+        # comparaing if all corners have covered or not, if covered goal state achieved.
         if(l1==l2):
             return True
         return False
-        # print(self.corners)
-        #if state in self.corners:
-        #return True
-        #return False
         util.raiseNotDefined()
 
     def getSuccessors(self, state):
@@ -340,16 +336,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            #calculating the next possible positions for pacman
             x,y = state[0]
            # print(state)
             dx,dy = Actions.directionToVector(action)
             nextx,nexty = int(x+dx), int(y+dy)
             hitsWall = self.walls[nextx][nexty]
-            #print(hitsWall)
+            # if next position is a wall, we dont need to add it as a successor.
             cornerCovered = state[1]
             if(hitsWall):
                 continue
             else:
+                # updating the corners covered, and appending the next valid states to successors list
                 if (nextx,nexty) not in cornerCovered and (nextx,nexty) in self.corners:
                     cornerCovered = cornerCovered + [(nextx,nexty)]
                     cornerCovered = list(set(cornerCovered))
@@ -389,102 +387,22 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    # heuristic = 0
-    # currentX,currentY = state[0]
-    # for x,y in corners:
-    #     heuristic = heuristic + abs(currentX-x) + abs(currentY-y)
-    # "*** YOUR CODE HERE ***"
-    # return heuristic/4 # Default to trivial solution 2446
-
-    # heuristic = 0
-    # currentX,currentY = state[0]
-    # for x,y in corners:
-    #     heuristic = heuristic + (((currentX-x)**2 + (currentY-y)**2)**(1/2))
-    # "*** YOUR CODE HERE ***"
-    # return heuristic/4 # Default to trivial solution 2234
-
-    # q=util.PriorityQueue()
-    # currentX,currentY = state[0]
-    # for x,y in corners:
-    #     if (x,y) not in state[1]:
-    #         d = int(abs(x-currentX)+abs(y-currentY))
-    #         q.push((x,y),d)
-    # heuristic=0
-    # while not q.isEmpty():
-    #     x,y = q.pop()
-    #     d =int(abs(x-currentX)+abs(y-currentY))
-    #     heuristic += d
-    #     currentX = x
-    #     currentY = y
-    # return heuristic   # 627
-
-    # q=util.PriorityQueue()
-    # currentX = state[0][0]
-    # currentY = state[0][1]
-    # for x,y in corners:
-    #     if (x,y) not in state[1]:
-    #         d = int(int(((x-currentX)**2 + (y-currentY)**2)**(0.5)))
-    #         q.push((x,y),d)
-    #         # print(int(((currentX-x)**2 + (currentY-y)**2)**(0.5)))
-    #         # print(int(((currentX-x)**2 + (currentY-y)**2)**(1/2)))
-    # heuristic=0
-    # while not q.isEmpty():
-    #     x,y = q.pop()
-    #     d=int(((currentX-x)**2 + (currentY-y)**2)**(0.5))
-    #     heuristic = heuristic + d
-    #     currentX = x
-    #     currentY = y
-    # return heuristic   # 627
-
-    # currentX,currentY = state[0]
-    # ma=0
-    # for x,y in corners:
-    #     if (x,y) not in state[1]:
-    #         d = (abs(x-currentX)+abs(y-currentY))
-    #         if ma<d:
-    #             ma=d
-    # heuristic = ma
-    # return heuristic   # 1357
-
-    # currentX,currentY = state[0]
-    # ma=1000
-    # ans = 0
-    # localCOvered = state[1]
-    # localX = currentX
-    # localY = currentY
-    # n=len(state[1])
-    # for i in range(0,4):
-    #     l=[]
-    #     for x,y in corners:
-    #         if (x,y) not in localCOvered:
-    #             d = (abs(x-currentX)+abs(y-currentY))
-    #             if ma>d:
-    #                 ma=d
-    #                 localX = x
-    #                 localY = y
-    #     currentX = localX
-    #     currentY = localY
-    #     if ma != 1000:
-    #         #print("check")
-    #         ans=ans+ma
-    #     localCOvered.append((localX,localY))
-    # heuristic = ans
-    # return heuristic   # 194 Best!!!
-
     currentX,currentY = state[0]
     ans = 0
     # cornersCovered=list(set(state[1]))
     localCOvered = list(set(state[1]))
-    n=len(localCOvered)
-    # print(cornersCovered)
-    for i in range(4-n):
-        l=[]
+    # storing currently how many corners are covered for the current state.
+    numberOfCornersCovered=len(localCOvered)
+    for i in range(4-numberOfCornersCovered):
+        distancesOfCornersFromCurrentPosition=[]
         for x,y in corners:
             if (x,y) not in localCOvered:
-                # d= util.manhattanDistance((x,y),(currentX,currentY))
-                d = (abs(x-currentX)+abs(y-currentY))
-                l.append((d,(x,y)))
-        loca = min(l)
+                # d= util.manhattanDistance((x,y),(currentX,currentY)) #833 Euclidean distance
+                d = (abs(x-currentX)+abs(y-currentY)) # 692 Manhattan distance
+                distancesOfCornersFromCurrentPosition.append((d,(x,y)))
+        # taking the minimum distance of the corners from the current state
+        loca = min(distancesOfCornersFromCurrentPosition)
+        #updating pacman position with the closest corner
         currentX = loca[1][0]
         currentY = loca[1][1]
         ans=ans + loca[0]
