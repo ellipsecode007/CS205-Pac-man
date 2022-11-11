@@ -502,7 +502,62 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+        
+    # foodLocations = foodGrid.asList()
+    # numberOfFoods = len(foodLocations)
+    # # print(len(foodLocations))
+    # currentX,currentY = state[0]
+    # ans = 0
+    # foodEaten = []
+    # # storing currently how many corners are covered for the current state.
+    # for i in range(numberOfFoods):
+    #     distancesOfFoodsFromCurrentPosition=[]
+    #     for x,y in foodLocations:
+    #         if (x,y) not in foodEaten:
+    #             #d= int(((currentX-x)**2 + (currentY-y)**2)**(0.5)) #833 Euclidean distance
+    #             d = (abs(x-currentX)+abs(y-currentY))
+    #             distancesOfFoodsFromCurrentPosition.append((d,(x,y)))
+    #     # taking the minimum distance of the corners from the current state
+    #     loca = min(distancesOfFoodsFromCurrentPosition)
+    #     #updating pacman position with the closest corner
+    #     currentX = loca[1][0]
+    #     currentY = loca[1][1]
+    #     ans=ans + loca[0]
+    #     foodEaten=  foodEaten + [(currentX,currentY)]
+    # heuristic = ans
+    # return heuristic   # 692 Best!!!
+    # return 0 # solution giving 6126 for tricky but failing autograder
+
+    # converting the Grid into list of Food Positions
+    foodLocations = foodGrid.asList()
+    # Base condition: if there is no food left in maze, heuristic becomes zero
+    if len(foodLocations)==0:
+        return 0
+    currentX = state[0][0]
+    currentY = state[0][1]
+    distanceOfFoodFromCurrentPosition =[]
+    for x,y in foodLocations:
+        # Computing the maze distance of the current pacman position from the food location 
+        d= mazeDistance((currentX,currentY),(x,y),problem.startingGameState)
+        # d = abs(currentX-x)+abs(currentY-y)
+        distanceOfFoodFromCurrentPosition.append((d,(x,y)))
+    #getting the nearsest food location from the current pacman location
+    nearestFood = min(distanceOfFoodFromCurrentPosition)
+    nearestFoodLocation = nearestFood[1]
+    nearestFoodDistance = nearestFood[0]
+    # updating the pacman location with the nearest food location
+    currentX,currentY = nearestFoodLocation
+    distanceOfFoodFromCurrentPosition =[]
+    for x,y in foodLocations:
+        d= mazeDistance((currentX,currentY),(x,y),problem.startingGameState)
+        # d = abs(currentX-x)+abs(currentY-y)
+        distanceOfFoodFromCurrentPosition.append((d,(x,y)))
+    # getting the farthest food location from current pacman location
+    farthestFoodFromCurrentFoodEaten = max(distanceOfFoodFromCurrentPosition)
+    farthestFoodFromCurrentFoodEatenDistance = farthestFoodFromCurrentFoodEaten[0]
+    # heuristic will be sum of nearest food location and farthest food location from the current food eaten
+    return farthestFoodFromCurrentFoodEatenDistance + nearestFoodDistance
+    # autogradre 5/4 but Nodes is 1818
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -533,6 +588,9 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        # calling bfs to return the shortest path
+        return search.bfs(problem)
+        # we observe that bfs, ucs and astar will give the exact same results.
         util.raiseNotDefined()
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -569,6 +627,13 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
+        # converting Grid into list of food locations
+        foodLocations = self.food.asList()
+        for cx,cy in foodLocations:
+            # checking if current location is a food location; goal reached
+            if cx==x and cy==y:
+                return True
+        return False
         util.raiseNotDefined()
 
 def mazeDistance(point1, point2, gameState):
